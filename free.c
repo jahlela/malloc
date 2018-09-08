@@ -64,7 +64,7 @@ free_t* next_free = (free_t *)memory;
 char* my_malloc(size_t amount) {
     // If first call, set first values of memory to 0 and the remaining free memory
     if (not_called) {
-        next_free->next = free_t*; // technically already initialized
+        next_free->next = 0;
         next_free->size = MEM_SIZE - sizeof(free_t);
         not_called = 0;
     }
@@ -73,11 +73,12 @@ char* my_malloc(size_t amount) {
 //    printf("size: %d\n",next_free->size);    
 
     // If size not enough for amount + 2, return 0
-    if ( next_free->size < (amount + 2)) {
+    if ( next_free->size < (amount + sizeof(free_t))) {
         return 0;
     } else {
-        // set next_free
-        // return the address of the newly allocated memory
+        // set next_free->next to next_free->next + amount
+        // return the address of the old next_free->next
+//        next_free->next = 
         return (char*)next_free;
     }
     
