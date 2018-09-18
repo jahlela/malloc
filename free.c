@@ -48,9 +48,6 @@
  *     0 | noise | program source in assembly bytecode |  stack | constants  
  *     0 | noise | program source in assembly bytecode |  stack | cons | memory = heap
  *
- *
- *
- *
  */
 
 // Everything is an integer
@@ -62,60 +59,61 @@ typedef struct free_block {
 } free_t;
 
 
-#define MEM_SIZE 1024
-
-// Define memory
-char memory[MEM_SIZE];
-
-// Define and initialize not_called and next_free
-int not_called = 1;
+#define MEM_SIZE 1024 // Define MEM_SIZE
+char memory[MEM_SIZE]; // Define memory
+int not_called = 1; // Define and initialize not_called and next_free
 free_t * next_free = (free_t *)memory;
+        // free_t is a custom-defined struct, which is a type
+        // free_t* is a pointer to a free_t
+        // free_t** is a pointer to a pointer to a free_t
+        // *(free_t**)
+
 
 // MY_MALLOC
 char * my_malloc(size_t amount) {
     // If first call, set first values of memory to 0 and the remaining free memory
+    printf("\namount: %zu\n", amount); // printf("amount: %p\n",(void *)amount->size);
+    
     if (not_called) {
-        next_free->next = 0;
+        next_free->next = (free_t *)memory;
         next_free->size = MEM_SIZE - sizeof(free_t);
         not_called = 0;
-        int new_free = (int)next_free;
-        printf("new_free: %i\n",new_free);
-        printf("*memory: %d\n", *memory);
-        printf("memory: %p\n", memory);
-        char * memory1 = memory;
-        printf("memory1: %p\n", memory1);
-        int  * memory2 = (int *)memory;
-        printf("memory2: %p\n", memory2);        
-        
-        
-        *(free_t**)memory = next_free;
-        // free_t is a custom-defined struct, which is a type
-        // free_t* is a pointer to a free_t
-        // free_t** is a pointer to a pointer to a free_t
-        // *(free_t**) 
-        next_free->next = (free_t *)(&memory[amount]);
+        printf("next_free->next: %p\n", next_free->next);
+        printf("next_free->size: %p\n", (void *)next_free->size); // printf("size: %p\n",(void *)next_free->size); // (void *)next_free->size);
     }
-
-    printf("next: %p\n", next_free->next);
-    printf("size: %p\n", (void *)next_free->size); // printf("size: %p\n",(void *)next_free->size); // (void *)next_free->size);
-    printf("amount: %zu\n", amount); // printf("amount: %p\n",(void *)amount->size);
-
-
 
     // If size not enough for amount + 2, return 0
     size_t to_allocate = amount + sizeof(free_t);
     printf("to_allocate: %zu\n",to_allocate);
+
+// When creating a new node in the linked list, set next to 0, and only update it if something after
+// has been allocated. This next = 0 will indicate that there is no additional space if size is
+// not big enough for amount
+    size_t free_size = next_free->size;
+    
     if ( next_free->size < to_allocate) {
         return 0;
     } else {
         // set next_free->next to next_free->next + amount
-        // return the address of the old next_free->next
-        // next_free->next =
-        return (char*)next_free;
+        // return the address of alloc_mem
+
+        char * memory1 = memory;
+        int  * memory2 = (int *)memory;
+        
+        // *(free_t**)memory = next_free;
+        free_t* alloc_mem = next_free;
+        next_free->next = (free_t *)(memory + amount); // (free_t *)(&memory[amount]);
+        next_free->size = alloc_mem->size - to_allocate;
+
+        printf("memory: %p\n", memory);
+        printf("*memory: %d\n", *memory);
+        printf("alloc_mem->next: %p\n", alloc_mem->next);
+        printf("next_free->next: %p\n", next_free->next);
+        printf("next_free->size: %p\n", (void *)next_free->size); // printf("size: %p\n",(void *)next_free->size); // (void *)next_free->size);
+
+
+        return (char *)alloc_mem;
     }
-
-    return (char *)next_free;
-
 }
 
 
@@ -132,17 +130,25 @@ int my_free(char* address) {
 
 
 int main(){
-    char* new_var_pointer = my_malloc(5);
-    printf("new_var_pointer: %p\n", new_var_pointer);
+    char* new_var_pointer05 = my_malloc(5);
+    char* new_var_pointer10 = my_malloc(10);
+    char* new_var_pointer1020 = my_malloc(1020);    
+    printf("\nnew_var_pointer05: %p\n", new_var_pointer05);
+    printf("new_var_pointer10: %p\n", new_var_pointer10);
+    printf("new_var_pointer1020: %p\n", new_var_pointer1020);    
     return 0;
 }
 
 
+//        int new_free = (int)next_free;
+//        printf("new_free: %i\n",new_free);
     //
     // printf("next: %p\n", next_free->next);
     // printf("size: %p\n", (void *)next_free->size); // printf("size: %p\n",(void *)next_free->size); // (void *)next_free->size);
     // printf("amount: %zu\n", amount); // printf("amount: %p\n",(void *)amount->size);
 
+    //  printf("memory1: %p\n", memory1);
+    //  printf("memory2: %p\n", memory2);        
 
 
 
