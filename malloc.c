@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 // Define node_t struct
 typedef struct free_node {
@@ -15,7 +16,7 @@ int not_called = 1;
 node_t* next_free = (node_t*)memory;
 
 char* my_malloc(int amount) {
-  printf("\n");            
+  printf("\n");
   // Initialize next_free's next and size with memory
   if (not_called) {
     next_free->next = (struct node_t *)memory;
@@ -50,14 +51,17 @@ char* my_malloc(int amount) {
 // MY_FREE
 int my_free(char* address) {
     printf("address %p\n", address);
-    node_t* to_dealloc = (node_t*)&address;
-    to_dealloc->next = (struct node_t *)next_free;
+    // set to_dealloc to next_free
+    node_t* to_dealloc = next_free;    
+    // set next_free to address
+    next_free = (node_t*)address;
 
+    assert(next_free == (node_t*)address);
     return 1;
 }
 
 
-int main(){
+int test_malloc() {
     printf("Starting to run malloc: \n");
     printf("memory: %p\n", memory);
     printf("next_free: %p\n", next_free);    
@@ -65,30 +69,31 @@ int main(){
     node_t* new_var_pointer05 = (node_t*)my_malloc(5);
     printf("new_var_pointer05: %p\n", new_var_pointer05);    
 
+    printf("\nStarting to free new_var_pointer05: \n");
+    printf("next_free: %p\n", next_free);    
+    my_free((char*)new_var_pointer05);
+    printf("next_free: %p\n", next_free);
+
+    node_t* new_var_pointer5 = (node_t*)my_malloc(5);
+    printf("new_var_pointer5: %p\n", new_var_pointer5);    
+
     node_t* new_var_pointer10 = (node_t*)my_malloc(10);
     printf("new_var_pointer10: %p\n", new_var_pointer10);
 
+    printf("\nStarting to free new_var_pointer10: \n");
+    printf("next_free: %p\n", next_free);    
+    my_free((char*)new_var_pointer10);
+    printf("next_free: %p\n", next_free);
+    
     node_t* new_var_pointer1020 = (node_t*)my_malloc(1020);
-    printf("new_var_pointer1020: %p\n", new_var_pointer1020);    
+    printf("new_var_pointer1020: %p\n", new_var_pointer1020);
+
+    return 1;
 }
 
 
 
-// void run_malloc(int amount){
-//     printf("Starting to run malloc: \n");
-//     printf("next_free: %p\n", next_free);
-//     printf("next_free->size: %p\n", (void *)next_free->size);
-//     node_t* new_var_pointer = (node_t*)my_malloc(amount);
-//     printf("new_var_pointer: %p\n", next_free);
-//     printf("new_var_pointer->size: %p\n", (void *)next_free->size);
-// }
-//
-//
-// void run_my_free(char* address){
-//     printf("Starting to run free: \n");
-//     printf("next_free: %p\n", next_free);
-//     printf("next_free->size: %p\n", (void *)next_free->size);
-//     my_free(address);
-//     printf("next_free: %p\n", next_free);
-//     printf("next_free->size: %p\n", (void *)next_free->size);
-// }
+int main(){
+    test_malloc();
+    return 1;
+}
