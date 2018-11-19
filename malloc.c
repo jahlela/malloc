@@ -31,30 +31,46 @@ char* my_malloc(int amount) {
   printf("Memory to allocate: %zu\n", to_allocate);
   printf("Remaining space: %zu\n", next_free->size);
   // If size not enough for amount + sizeof(node_t), return 0
-  if (next_free->size < to_allocate) {
-    return 0;
-  } else {
-    // set alloc_mem to next_free
-    // set next_free to next_free + to_allocate
-    // set alloc_mem->next to that spot
-    // set next_free->size to alloc_mem->size - to_allocate
-    // return alloc_mem
-    node_t* alloc_mem = next_free;
-    next_free = next_free + to_allocate;
-    alloc_mem->next = (struct node_t *)next_free;
-    next_free->size = alloc_mem->size - to_allocate;
-    return (char *)alloc_mem;
+
+
+  node_t* to_check = next_free;
+  // set to_check to next_free
+  // check if to_check is big enough
+  // if so, allocate there
+  // if not, set to_check to to_check->next
+  // NOTE: Possibly the last one could have enough space, but it would be skipped here
+  while(to_check->next != 0) {
+    if (to_check->size >= to_allocate) {
+      // set alloc_mem to to_check
+      // set next_free to to_check + to_allocate
+      // set alloc_mem->next to that spot
+      // set next_free->size to alloc_mem->size - to_allocate
+      // return alloc_mem
+      node_t* alloc_mem = to_check;
+      next_free = to_check + to_allocate;
+      // NOTE: Not sure if this logic is correct
+      alloc_mem->next = (struct node_t *)next_free;
+      next_free->size = alloc_mem->size - to_allocate;
+      return (char *)alloc_mem;
+    } else {
+      to_check = to_check->next;
+    }
   }
+  return 0;
 }
 
 
 // MY_FREE
 int my_free(char* address) {
     printf("address %p\n", address);
+    // set next_free->next to address->next
     // set to_dealloc to next_free
     // set next_free to address
-    node_t* to_dealloc = next_free;    
+    node_t* old_next_free = next_free;
+    node_t* to_dealloc = (node_t*)address;
+    old_next_free->next = to_dealloc->next;
     next_free = (node_t*)address;
+    next_free->next = old_next_free;
 
     assert(next_free == (node_t*)address);
     return 1;
